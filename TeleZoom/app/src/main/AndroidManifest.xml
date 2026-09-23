@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.fluxsniffer.telezoom"
+    android:versionCode="15"
+    android:versionName="14.0">
+
+    <uses-sdk android:minSdkVersion="29" android:targetSdkVersion="34" />
+
+    <application
+        android:label="TeleZoom (Titan 2 Elite)"
+        android:hasCode="true"
+        android:allowBackup="false">
+
+        <meta-data
+            android:name="xposedmodule"
+            android:value="true" />
+        <meta-data
+            android:name="xposeddescription"
+            android:value="Redirects GCam to the logical multi-camera (id 3) and translates its crop zoom into CONTROL_ZOOM_RATIO so the Titan 2 Elite SAT HAL switches to the 6.8mm telephoto. No cameraserver patching." />
+        <meta-data
+            android:name="xposedminversion"
+            android:value="93" />
+        <meta-data
+            android:name="xposedscope"
+            android:resource="@array/xposed_scope" />
+
+        <provider
+            android:name=".ShotProvider"
+            android:authorities="com.fluxsniffer.telezoom.shot"
+            android:exported="false"
+            android:grantUriPermissions="true" />
+
+        <!-- TeleShot: launched only by the in-GCam TELE button (explicit setClassName),
+             so it carries NO LAUNCHER intent-filter and shows no drawer icon. -->
+        <activity
+            android:name=".TeleShot"
+            android:label="TeleShot"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+    </application>
+</manifest>

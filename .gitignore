@@ -1,0 +1,22 @@
+# build artifacts
+TeleZoom/build/
+TeleZoom/*.apk
+*.keystore
+# local backups / patched apks (never commit GCam binaries)
+gcam-original.apk
+gcam-lspatched.apk
+lspatched/
+# tooling
+android.jar
+xposed-api-*.jar
+.telezoom-build/
+magisk-module/telezoom.apk
+titan2-telephoto-module.zip
+magisk-module/gcam-patched.apk
+magisk-module/gcam-pkg
+magisk-module/.gcam_installed
+titan2-telephoto-FULL.zip
+release/
+*-lspatched.apk
+.lspatched/
+titan2-telephoto-FULL.zip

@@ -1,0 +1,11 @@
+On device (Termux), instead of downloading the Xposed api jar, compile these stubs:
+
+  cd TeleZoom
+  export ANDROID_JAR=/storage/emulated/0/Download/TeleZoom/android.jar
+  mkdir -p build/stub-classes
+  javac -d build/stub-classes $(find xposed-stubs -name '*.java')
+  cd build/stub-classes && jar cf ~/xposed-api-82.jar . && cd ../..
+  # verify:
+  unzip -l ~/xposed-api-82.jar | head
+  # then build as normal:
+  bash build-on-device.sh
