@@ -52,7 +52,7 @@
 #
 #   For a boot service, prefer the packaged Magisk module
 #   (magisk-module/ -> titan2-tele-unlock-magisk.zip); --install here is a
-#   lightweight alternative that keeps a live ptrace rule.
+#   lightweight alternative; it does not keep a standing SELinux rule.
 
 set -u
 
@@ -87,7 +87,15 @@ die(){ printf '\n%s[FAIL]%s %s\n\n' "$RED" "$RST" "$*"; exit 1; }
 su -c 'id -u' >/dev/null 2>&1 || die "no root"
 [ -n "$PY3" ] || die "python3 needed"
 
-su -c "$MP --live \"allow su cameraserver process ptrace\"" 2>/dev/null
+# SELinux note: cameraserver runs in a domain that normally blocks ptrace even for
+# root. We do NOT add a standing policy rule (a permanent 'allow su cameraserver
+# ptrace' rule loosens system policy and trips Google Play Protect). Instead each
+# memory operation is bracketed: try it as-is; only if the kernel blocks it do we
+# add the rule, do the op, and immediately remove it again with a matching deny so
+# the live policy ends up exactly as it started.
+SEPOL_RULE="allow su cameraserver process ptrace"
+sepol_add(){ su -c "$MP --live \"$SEPOL_RULE\"" 2>/dev/null; }
+sepol_del(){ su -c "$MP --live \"deny su cameraserver process ptrace\"" 2>/dev/null; }
 
 su -c "cat > $TMP/rb.py" <<'PYEOF'
 import sys, struct, os, json
@@ -182,7 +190,20 @@ def main():
 main()
 PYEOF
 
-run(){ su -c "$PY3 $TMP/rb.py $1 \"$2\" \"$3\""; }
+# run <cmd> <sites> <backup>: execute the patch helper, adding the SELinux rule
+# only if the first attempt is blocked, and always removing it afterwards.
+run(){
+  local out
+  out="$(su -c "$PY3 $TMP/rb.py $1 \"$2\" \"$3\"" 2>/dev/null)"
+  case "$out" in
+    *Operation\ not\ permitted*|*Permission\ denied*|*EPERM*|*EACCES*|"")
+      sepol_add
+      out="$(su -c "$PY3 $TMP/rb.py $1 \"$2\" \"$3\"" 2>/dev/null)"
+      sepol_del
+      ;;
+  esac
+  printf '%s' "$out"
+}
 
 show_sites(){ "$PY3" -c 'import json,sys
 d=json.load(sys.stdin)
@@ -223,8 +244,8 @@ status)
   ;;
 install)
   step "INSTALL boot service (re-applies the unlock every boot)"
-  warn "prefer the packaged module in magisk-module/. This keeps a live"
-  warn "'allow su cameraserver process ptrace' SELinux rule, re-applied each boot."
+  warn "prefer the packaged module in magisk-module/. The SELinux ptrace rule is"
+  warn "added only if needed and removed immediately — no standing rule is kept."
   printf '  %sType exactly: I ACCEPT  %s' "$BLD" "$RST"; read -r a
   [ "$a" = "I ACCEPT" ] || die "not accepted"
   M=/data/adb/modules/reject_bypass
@@ -236,14 +257,22 @@ name=cameraserver system-camera reject bypass
 version=2.0
 versionCode=3
 author=local
-description=Re-applies the RAM patch (system-camera unlock) each boot. Keeps a live ptrace rule.
+description=Re-applies the RAM patch (system-camera unlock) each boot. Adds the SELinux ptrace rule only if needed and removes it immediately (no standing rule).
 EOF
   su -c "cat > $M/service.sh" <<EOF
 #!/system/bin/sh
 until [ "\$(getprop sys.boot_completed)" = "1" ]; do sleep 2; done
 sleep 10
-$MP --live "allow su cameraserver process ptrace"
-$PY3 $M/rb.py apply "$UNLOCK_SITES" "$UNLOCK_BK"
+# Try the patch first; only add the SELinux ptrace rule if blocked, then remove it
+# again so no standing rule is left in the live policy (which would trip Play Protect).
+out="\$($PY3 $M/rb.py apply "$UNLOCK_SITES" "$UNLOCK_BK" 2>/dev/null)"
+case "\$out" in
+  *"not permitted"*|*"Permission denied"*|"")
+    $MP --live "allow su cameraserver process ptrace"
+    $PY3 $M/rb.py apply "$UNLOCK_SITES" "$UNLOCK_BK"
+    $MP --live "deny su cameraserver process ptrace"
+    ;;
+esac
 EOF
   su -c "chmod 0755 $M/service.sh"; su -c "chmod 0644 $M/module.prop $M/rb.py"
   ok "installed at $M — re-applies the unlock each boot"
@@ -251,5 +280,5 @@ EOF
 uninstall)
   step "UNINSTALL boot service"
   su -c "rm -rf /data/adb/modules/reject_bypass"
-  ok "removed; reboot to fully clear (drops the ptrace rule too)"; echo;;
+  ok "removed; reboot to fully clear"; echo;;
 esac

@@ -14,7 +14,7 @@ if [ -f "$MODPATH/gcam-patched.apk" ]; then
   ui_print "  (Installing GCam REPLACES any existing copy of that package.)"
 else
   ui_print "- Unlock-only build (no bundled GCam)."
-  ui_print "  Build the full module with make-release.sh for the one-flash setup."
+  ui_print "  Build the full module with make-full-module.sh for the one-flash setup."
 fi
 ui_print "- Reboot once after flashing."
 set_perm_recursive "$MODPATH" 0 0 0755 0755

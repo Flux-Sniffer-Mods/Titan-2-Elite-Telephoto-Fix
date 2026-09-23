@@ -4,7 +4,7 @@
 #
 #   Cache: ~/.telezoom-cache/android.jar
 #   Then:  export ANDROID_JAR=~/.telezoom-cache/android.jar   (build-on-device.sh
-#          / install.sh / make-release.sh all honour ANDROID_JAR)
+#          / install.sh / make-full-module.sh all honour ANDROID_JAR)
 #
 # Usage:
 #   ./cache-android-jar.sh                 # search + cache

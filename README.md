@@ -14,37 +14,18 @@ required.
 
 ---
 
-## Table of contents
+## Contents
 
-- [Background: what this fixes](#background-what-this-fixes)
 - [Requirements](#requirements)
 - [Install](#install)
 - [Using it](#using-it)
 - [Troubleshooting](#troubleshooting)
+- [Background: what this fixes](#background-what-this-fixes)
 - [How it works, in depth (the investigation)](#how-it-works-in-depth-the-investigation)
 - [Building it yourself](#building-it-yourself)
 - [Repository layout](#repository-layout)
 - [Reverting / uninstalling](#reverting--uninstalling)
 - [Credits and license](#credits-and-license)
-
----
-
-## Background: what this fixes
-
-The Titan 2 Elite has four camera sensors. The firmware exposes only two of them
-to apps and flags the other two — including the telephoto — as `SYSTEM_CAMERA`,
-an Android designation that hides a camera from ordinary apps unless they hold a
-special signature-level permission. Google Camera, like any normal app, cannot
-open it, so out of the box there is no way to use the tele lens in GCam.
-
-This project removes that restriction and then teaches GCam to actually drive the
-tele. The result is a Google Camera that can shoot telephoto stills and video on
-hardware the manufacturer left dormant.
-
-If you only want it working, follow [Install](#install). If you want to
-understand exactly how the lock works and how each layer was defeated, read
-[How it works, in depth](#how-it-works-in-depth-the-investigation) — it is a
-complete account, written for someone starting from zero.
 
 ---
 
@@ -155,6 +136,24 @@ You should see lines for the unlock, the app install, and the GCam install.
 
 ---
 
+## Background: what this fixes
+
+The Titan 2 Elite has four camera sensors. The firmware exposes only two of them
+to apps and flags the other two — including the telephoto — as `SYSTEM_CAMERA`,
+an Android designation that hides a camera from ordinary apps unless they hold a
+special signature-level permission. Google Camera, like any normal app, cannot
+open it, so out of the box there is no way to use the tele lens in GCam.
+
+This project removes that restriction and then teaches GCam to actually drive the
+tele. The result is a Google Camera that can shoot telephoto stills and video on
+hardware the manufacturer left dormant.
+
+The [Install](#install) section above is all you need to use it. The rest of this
+document explains how the lock works and how each layer was defeated — a complete
+account, written for someone starting from zero.
+
+---
+
 ## How it works, in depth (the investigation)
 
 This section is the complete technical story of the project — every phase, in the
@@ -253,8 +252,13 @@ Neutralize the functions that enforce the hiding and the cameras become visible
 and openable to any app. Two obstacles stood in the way, and both were solved:
 
 1. **SELinux.** `cameraserver` runs in the domain `u:r:cameraserver:s0`, which
-   forbids even root from attaching to it (`ptrace`). A single live Magisk policy
-   rule lifts exactly that: `magiskpolicy --live "allow su cameraserver process ptrace"`.
+   forbids even root from attaching to it (`ptrace`). A live Magisk policy rule
+   lifts exactly that: `magiskpolicy --live "allow su cameraserver process ptrace"`.
+   That rule is added only for the moment the patch is written and then **removed
+   again immediately** with a matching `deny`. Leaving it as a *standing* rule
+   would loosen system SELinux policy and make Google Play Protect flag the device
+   as modified; adding it transiently avoids that, and on setups where root can
+   already ptrace across domains it is never added at all.
 2. **dm-verity.** The binary lives on the verity-protected `/system` partition, so
    it cannot be edited on disk. Instead it is patched **in the running process's
    memory** (`/proc/<pid>/mem`) — verity never sees a change, and a reboot fully
@@ -487,7 +491,8 @@ and exactly what GCam's RAW-bound photo mode cannot.
    `getSystemCameraKind` beat chasing four downstream filters.
 3. **You can RAM-patch a verity-protected binary on a rooted device:**
    `magiskpolicy --live` lifts the ptrace block, `/proc/<pid>/mem` becomes
-   writable, and a reboot cleanly restores everything.
+   writable, and a reboot cleanly restores everything. Add such a policy rule only
+   transiently (remove it right after) — a standing rule trips Play Protect.
 4. **A partial binary patch is worse than none** (the dropped stack adjustment).
 5. **Assemblers may resolve branches against the wrong base** — verify by
    disassembling the bytes you actually wrote, or encode branches by hand.
@@ -519,11 +524,11 @@ git clone https://github.com/Flux-Sniffer-Mods/Titan-2-Elite-Telephoto-Fix
 cd Titan-2-Elite-Telephoto-Fix
 
 bash tools/cache-android-jar.sh                 # reuse an android.jar already on device
-bash make-release.sh /path/to/clean-gcam.apk    # builds + patches + packages
+bash make-full-module.sh /path/to/clean-gcam.apk    # builds + patches + packages
 # result: titan2-telephoto-FULL.zip  (flash it, or attach it to a Release)
 ```
 
-`make-release.sh` builds the TeleZoom app, uses LSPatch to bake it into your
+`make-full-module.sh` builds the TeleZoom app, uses LSPatch to bake it into your
 clean GCam, and bundles both into the full module. It fetches `android.jar` and
 LSPatch automatically if they aren't already cached; override with `ANDROID_JAR=`
 and `LSPATCH_JAR=`.
@@ -538,8 +543,8 @@ Magisk module for the boot-time unlock). See `TeleZoom/README.md`.
 ## Repository layout
 
 ```
-make-release.sh          Build the release module from source (the main entry point).
-make-full-module.sh      Bundle a full module from already-built APKs.
+make-full-module.sh          Build the full module from source: builds TeleZoom, LSPatches your
+                             clean GCam, and packages the flashable module (the main build entry point).
 reject-bypass.sh         Apply/revert the cameraserver unlock by hand (RAM patch).
 quickstart.sh            Prints the short install summary.
 install.sh               Termux end-to-end build+install (for the LSPosed route).
@@ -561,8 +566,10 @@ tools/
   cache-android-jar.sh     find and cache an android.jar from the device
   cameraserver-recon.sh    re-derive patch offsets after a firmware update
   camera-array.sh, collect-diag.sh   diagnostics
-  legacy/                  superseded approaches, kept for reference
+  legacy/                  superseded approaches (permission route, lens-config,
+                           photo-cave), kept for reference — see tools/legacy/README.md
 
+CHANGELOG.md              Version history.
 LICENSE                   MIT
 ```
 

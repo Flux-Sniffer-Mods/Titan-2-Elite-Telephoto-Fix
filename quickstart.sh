@@ -12,5 +12,5 @@ Titan 2 Elite hidden telephoto — quickstart
 
   Building it yourself instead? See README.md "Build it yourself":
     bash tools/cache-android-jar.sh
-    bash make-release.sh /path/to/clean-gcam.apk
+    bash make-full-module.sh /path/to/clean-gcam.apk
 TXT

@@ -1,0 +1,40 @@
+# GCam lens configuration, exported by configure-lenses.sh
+# Apply with: ./configure-lenses.sh apply lenses.tsv
+# key<TAB>type<TAB>value
+pref_audio_zoom_key	string	1
+pref_aux_layout	string	0
+pref_aux_tele_key	string	1
+pref_enable_manual_array_key	string	1
+pref_gcam_lens_logic_key	string	0
+pref_gcam_lens_logic_key_2	string	0
+pref_gcam_lens_logic_key_3	string	0
+pref_gcam_lens_logic_key_4	string	0
+pref_gcam_lens_logic_key_5	string	0
+pref_gcam_lens_logic_key_front	string	0
+pref_has_checked_lens_mode	string	0
+pref_izoom_key_id4	string	0
+pref_izoom_key_id5	string	0
+pref_izoom_key_main	string	0
+pref_izoom_key_tele	string	0
+pref_izoom_key_wide	string	0
+pref_manual_array_key	string	0,1,2,3
+pref_manual_camera_name_key_2	string	2x
+pref_manual_camera_name_key_3	string	0.6x
+pref_manual_camera_name_key_4	string	ID4
+pref_manual_camera_name_key_5	string	ID5
+pref_manual_camera_name_key_main	string	1x
+pref_manual_cameraid_back_1_key	string	0
+pref_manual_cameraid_back_2_key	string	3
+pref_manual_cameraid_back_3_key	string	3
+pref_manual_cameraid_back_4_key	string	4
+pref_manual_cameraid_back_5_key	string	5
+pref_manual_cameraid_front_1_key	string	1
+pref_manual_cameraid_front_2_key	string	1
+pref_manual_cameraid_front_3_key	string	1
+pref_manual_cameraid_front_4_key	string	1
+pref_manual_cameraid_front_5_key	string	1
+pref_manual_cameraid_key	string	1
+pref_max_zoom_key	string	16
+pref_show_buttons_key	string	1
+pref_zoom_in_command_string	string	19
+pref_zoom_out_command_string	string	20
