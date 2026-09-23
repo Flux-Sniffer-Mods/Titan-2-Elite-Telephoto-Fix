@@ -451,7 +451,7 @@ EOF
 
 uninstall)
   step "UNINSTALL boot service"
-  su -c "rm -rf $MODDIR"
+  su -c "rm -rf \"$MODDIR\""
   ok "removed. Reboot to fully clear (also drops the ptrace rule)."
   echo
   ;;

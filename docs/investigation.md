@@ -1,15 +1,17 @@
 # Investigation
 
-The full technical write-up — how the system-camera lock works, how each layer
-was defeated, and the approaches that failed — now lives in the main
-[README](../README.md#how-it-works-in-depth-the-investigation) so that it sits
-alongside the install instructions in one place.
+The full technical write-up (how the system-camera lock works, how each layer was
+defeated, and the approaches that failed) lives in the main
+[README](../README.md#how-it-works-in-depth-the-investigation), alongside the
+install instructions.
 
 See **"How it works, in depth (the investigation)"** there. It covers:
 
-- Part A — removing the system-camera lock (the core fix)
-- Part B — the abandoned "photo cave" and why it failed
-- Part C — reaching the telephoto via zoom on the logical camera
-- Part D — why GCam's main Photo mode cannot use the telephoto
-- Part E — shipping without Xposed (LSPatch), and the font-init bug
+- Phase 0: the goal and the shape of the problem
+- Phases 1 to 3: removing the system-camera lock (the core fix)
+- Phases 4 and 5: the photo crash, and the abandoned "photo cave"
+- Phase 6: the re-sign trap
+- Phases 7 and 8: reaching the telephoto through zoom on the logical camera, and
+  the TeleShot stills route
+- Phase 9: shipping without Xposed (LSPatch), and the font-init bug
 - Re-deriving offsets after a firmware update

@@ -1,7 +1,7 @@
 # Changelog
 
 ## v1.1
-- **Play Protect fix:** the cameraserver unlock no longer leaves a standing SELinux
+- **Play Protect fix**: the cameraserver unlock no longer leaves a standing SELinux
   rule. The `allow su cameraserver ptrace` rule is now added only for the moment the
   patch is written and removed immediately afterward (matching `deny`), so the live
   policy is unchanged and Google Play Protect no longer flags the device. On setups

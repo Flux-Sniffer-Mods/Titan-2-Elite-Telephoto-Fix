@@ -9,28 +9,29 @@ Inside GCam (`com.google.android.GoogleCameraEngR18F1`):
 
 - **Redirect** `openCamera("0")` → `"3"`, the logical multi-camera that owns the
   SAT lens switch. (Front camera untouched.)
-- **Zoom-ratio translation** — turn GCam's `SCALER_CROP_REGION` crop zoom into
+- **Zoom-ratio translation**: turn GCam's `SCALER_CROP_REGION` crop zoom into
   `CONTROL_ZOOM_RATIO` on cam 3, so the MediaTek SAT HAL switches to the 6.8 mm
   tele past its optical crossover. This is what makes **tele video** work.
-- **TELE button** — a floating button on GCam's main screen that launches the
+- **TELE button**: a floating button on GCam's main screen that launches the
   TeleShot flow for a **tele still**.
-- **Auto-tele** — when GCam is launched by TeleShot, the zoom is scaled so it
+- **Auto-tele**: when GCam is launched by TeleShot, the zoom is scaled so it
   opens already framed on the tele.
-- **FontsContract fix** — only relevant to LSPatch builds: seeds the
+- **FontsContract fix**: only relevant to LSPatch builds: seeds the
   `FontsContract` context that LSPatch's late module load otherwise leaves null
   (which crashed the fonts thread → black photo preview). A no-op under LSPosed.
 
-Companion app (`com.fluxsniffer.telezoom`, **no launcher icon** — driven by the
+Companion app (`com.fluxsniffer.telezoom`, **no launcher icon**, driven by the
 TELE button):
 
-- **TeleShot** — launches GCam's `ACTION_IMAGE_CAPTURE` (its only no-RAW still
+- **TeleShot**: launches GCam's `ACTION_IMAGE_CAPTURE` (its only no-RAW still
   path, so the tele can serve it) with its own content provider as the output
   target, then copies the processed JPEG into `DCIM/Camera` and stamps
   `DateTimeOriginal`.
-- **ShotProvider** — the content provider GCam writes the capture into (GCam
+- **ShotProvider**: the content provider GCam writes the capture into (GCam
   refuses `file://` and pending-MediaStore targets).
 
-See `../the README ("How it works, in depth")` Parts C–E for the full reasoning.
+See ["How it works, in depth"](../README.md#how-it-works-in-depth-the-investigation)
+in the main README, Phases 7 to 9, for the full reasoning.
 
 ## Build (on device, in Termux)
 
@@ -41,8 +42,8 @@ bash build-on-device.sh
 ```
 
 Produces `TeleZoom-signed.apk`. Install it, then either enable it in LSPosed
-(scope: GCam) **or** bake it into GCam with LSPatch — see the top-level
-`README.md`.
+(scope: GCam) **or** bake it into GCam with LSPatch; see
+[Building it yourself](../README.md#building-it-yourself) in the main README.
 
 ## Tunables (top of `ZoomHook.java`)
 

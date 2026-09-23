@@ -4,6 +4,12 @@
 # Produces: TeleZoom-signed.apk  (install, then enable in LSPosed, scope=GCam)
 set -eu
 
+# Every path below is relative to this script's own folder, and 'set -e' means the
+# first one that misses kills the script with a bare "No such file or directory".
+# Running it as "bash TeleZoom/build-on-device.sh" from the repo root did exactly
+# that, so move to the right folder first and the script works from anywhere.
+cd "$(dirname "$(readlink -f "$0")")"
+
 PKG=com.fluxsniffer.telezoom
 SRC=$(find app/src/main/java -name "*.java")
 MANIFEST=app/src/main/AndroidManifest.xml
